@@ -13,32 +13,24 @@ class AddTaskPage extends StatefulWidget {
 
 class _AddTaskPageState extends State<AddTaskPage> {
   final _formKey = GlobalKey<FormState>();
-  late final TaskController _controller;
 
   String _title = "";
   String _content = "";
-  DateTime? _selectedDate;
   String _priority = "Moyenne";
-  bool _isLoading = false;
+  DateTime? _selectedDate;
 
   final List<String> priorities = ["Élevée", "Moyenne", "Basse"];
 
-  @override
-  void initState() {
-    super.initState();
-    _controller = TaskController(TaskRepository(TaskApiService()));
-  }
-
   Future<void> _pickDateTime() async {
-    DateTime? pickedDate = await showDatePicker(
+    final pickedDate = await showDatePicker(
       context: context,
       initialDate: DateTime.now(),
-      firstDate: DateTime(2025),
+      firstDate: DateTime(2023),
       lastDate: DateTime(2100),
     );
 
     if (pickedDate != null) {
-      TimeOfDay? pickedTime = await showTimePicker(
+      final pickedTime = await showTimePicker(
         context: context,
         initialTime: TimeOfDay.now(),
       );
@@ -57,119 +49,146 @@ class _AddTaskPageState extends State<AddTaskPage> {
     }
   }
 
-  Future<void> _saveTask() async {
+  void _saveTask() {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
-
-      final task = Task(
-        id: "",
-        title: _title,
-        content: _content,
-        date: _selectedDate ?? DateTime.now(),
-        priority: _priority,
-      );
-
-      setState(() => _isLoading = true);
-
-      try {
-        await _controller.addTask(task);
-
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("✅ Tâche ajoutée avec succès")),
-          );
-          Navigator.pop(context, true);
-        }
-      } catch (e) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text("Erreur : $e")));
-      } finally {
-        setState(() => _isLoading = false);
-      }
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("✅ Tâche ajoutée")));
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Ajouter une tâche")),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: ListView(
-            children: [
-              TextFormField(
-                decoration: const InputDecoration(
-                  labelText: "Titre",
-                  border: OutlineInputBorder(),
+      backgroundColor: Colors.grey[300],
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            /// 🔹 Header avec image et texte
+            Container(
+              width: double.infinity,
+              height: 400,
+              decoration: const BoxDecoration(
+                image: DecorationImage(
+                  image: AssetImage("assets/images/header.jpeg"), // ton image
+                  fit: BoxFit.cover,
                 ),
-                validator:
-                    (value) =>
-                        value == null || value.isEmpty
-                            ? "Entrez un titre"
-                            : null,
-                onSaved: (value) => _title = value!,
               ),
-              const SizedBox(height: 16),
-
-              TextFormField(
-                decoration: const InputDecoration(
-                  labelText: "Description",
-                  border: OutlineInputBorder(),
-                ),
-                maxLines: 3,
-                onSaved: (value) => _content = value ?? "",
-              ),
-              const SizedBox(height: 16),
-
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      _selectedDate == null
-                          ? "Aucune date choisie"
-                          : "📅 ${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year} "
-                              "⏰ ${_selectedDate!.hour}:${_selectedDate!.minute.toString().padLeft(2, '0')}",
+              child: Container(
+                color: Colors.black.withOpacity(0.4),
+                child: Center(
+                  child: Text(
+                    "RÉALISE TES RÊVES",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 2,
                     ),
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.calendar_today),
-                    onPressed: _pickDateTime,
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-
-              DropdownButtonFormField(
-                decoration: const InputDecoration(
-                  labelText: "Priorité",
-                  border: OutlineInputBorder(),
                 ),
-                value: _priority,
-                items:
-                    priorities
-                        .map((p) => DropdownMenuItem(value: p, child: Text(p)))
-                        .toList(),
-                onChanged: (value) => setState(() => _priority = value!),
               ),
-              const SizedBox(height: 24),
+            ),
 
-              _isLoading
-                  ? const Center(child: CircularProgressIndicator())
-                  : ElevatedButton.icon(
-                    icon: const Icon(Icons.save),
-                    onPressed: _saveTask,
-                    label: const Text("Enregistrer"),
-                    style: ElevatedButton.styleFrom(
-                      minimumSize: const Size(double.infinity, 50),
+            /// 🔹 Formulaire
+            Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  children: [
+                    /// Champ titre
+                    TextFormField(
+                      decoration: _inputStyle("Faire de java"),
+                      validator:
+                          (v) => v == null || v.isEmpty ? "Titre requis" : null,
+                      onSaved: (v) => _title = v!,
                     ),
-                  ),
-            ],
-          ),
+                    const SizedBox(height: 16),
+
+                    /// Champ description
+                    TextFormField(
+                      decoration: _inputStyle("Exercice 1 à 5 page 56"),
+                      maxLines: 2,
+                      onSaved: (v) => _content = v ?? "",
+                    ),
+                    const SizedBox(height: 16),
+
+                    /// Dropdown priorité
+                    DropdownButtonFormField(
+                      decoration: _inputStyle("Élevée / Moyenne / Basse"),
+                      value: _priority,
+                      items:
+                          priorities
+                              .map(
+                                (p) =>
+                                    DropdownMenuItem(value: p, child: Text(p)),
+                              )
+                              .toList(),
+                      onChanged: (v) => setState(() => _priority = v!),
+                    ),
+                    const SizedBox(height: 16),
+
+                    /// Sélecteur Date & Heure
+                    InkWell(
+                      onTap: _pickDateTime,
+                      child: InputDecorator(
+                        decoration: _inputStyle("Date°Heure"),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              _selectedDate == null
+                                  ? "Choisir une date"
+                                  : "${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year} "
+                                      "à ${_selectedDate!.hour}:${_selectedDate!.minute.toString().padLeft(2, "0")}",
+                            ),
+                            const Icon(Icons.calendar_today),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 80),
+
+                    /// Bouton ajouter
+                    ElevatedButton(
+                      onPressed: _saveTask,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        foregroundColor: Colors.black,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          side: const BorderSide(color: Colors.black),
+                        ),
+                        minimumSize: const Size(double.infinity, 50),
+                      ),
+                      child: const Text(
+                        "J’ajoute",
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
       ),
+    );
+  }
+
+  /// Style uniforme des champs
+  InputDecoration _inputStyle(String hint) {
+    return InputDecoration(
+      hintText: hint,
+      filled: true,
+      fillColor: Colors.white,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(20)),
     );
   }
 }
