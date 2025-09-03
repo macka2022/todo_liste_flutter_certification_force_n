@@ -1,4 +1,7 @@
+// ignore: file_names
 import 'package:flutter/material.dart';
+import 'package:organiser/Detailstaches.dart';
+import 'package:organiser/Variables/liste.dart';
 
 class Lister extends StatefulWidget {
   const Lister({super.key});
@@ -10,50 +13,32 @@ class Lister extends StatefulWidget {
 }
 
 class Etatlister extends State<Lister> {
-  final List<Map<String, dynamic>> taches = [
-    {
-      "Titre": "Faire du Java",
-      "Description": "Le java est un langage de programmation",
-      "Date_heure": "21/09/2025 a 07:00 min",
-      "Elevation": "eleve",
-      "Couleur": const Color.fromARGB(255, 240, 31, 16),
-    },
-    {
-      "Titre": "Faire du Dart",
-      "Description": "Le Dart est un langage de programmation oriente objet",
-      "Date_heure": "21/09/2025 a 11:30 min",
-      "Elevation": "Moyenne",
-      "Couleur":  const Color.fromARGB(255, 170, 78, 71),
-    },
-    {
-      "Titre": "Faire du Python",
-      "Description": "Le java est un langage de programmation oriente objet non type",
-      "Date_heure": "01/10/2025 a 10:00 min",
-      "Elevation": "Basse",
-      "Couleur":  const Color.fromARGB(255, 240, 168, 163),
-    },
-    {
-      "Titre": "Faire du Python",
-      "Description": "Le java est un langage de programmation oriente objet non type",
-      "Date_heure": "01/10/2025 a 10:00 min",
-      "Elevation": "Basse",
-      "Couleur":  const Color.fromARGB(255, 240, 168, 163),
-    },
-    {
-      "Titre": "Faire du Python",
-      "Description": "Le java est un langage de programmation oriente objet non type",
-      "Date_heure": "01/10/2025 a 10:00 min",
-      "Elevation": "Basse",
-      "Couleur":  const Color.fromARGB(255, 240, 168, 163),
-    },
-    {
-      "Titre": "Faire du Python",
-      "Description": "Le java est un langage de programmation oriente objet non type",
-      "Date_heure": "01/10/2025 a 10:00 min",
-      "Elevation": "Basse",
-      "Couleur":  const Color.fromARGB(255, 240, 168, 163),
+  
+  List<Map<String, dynamic>> filtre=[];
+  final trier=TextEditingController();
+
+ 
+@override
+  void initState(){
+  super.initState();
+  filtre=listes.taches;
+}
+
+void filtrerList(String query){
+  setState(() {
+    if(query.isEmpty){
+      filtre=listes.taches;
     }
-  ];
+    else{
+      filtre=listes.taches.where((taches)=>taches["Titre"].toLowerCase().contains(query.toLowerCase())).toList();
+    }
+  });
+}
+
+
+
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -77,7 +62,23 @@ class Etatlister extends State<Lister> {
             ),
           ),
         ),
-        centerTitle: true,
+        //centerTitle: true,
+        actions: [
+          Padding(
+            padding: EdgeInsetsGeometry.only(right: 11),
+            child: Container(
+              height: 25,
+              width: 25,
+              decoration: BoxDecoration(
+                color: const Color.fromARGB(255, 207, 195, 240),
+                borderRadius: BorderRadius.circular(13),
+              ),
+              child: Center(
+                child: Text("G", style: TextStyle(fontWeight: FontWeight.bold)),
+              ),
+            ),
+          ),
+        ],
       ),
 
       body: Column(
@@ -87,21 +88,80 @@ class Etatlister extends State<Lister> {
           Container(
             padding: EdgeInsets.zero,
             width: MediaQuery.of(context).size.width,
-            height: MediaQuery.of(context).size.height * 0.35,
+            height: MediaQuery.of(context).size.height * 0.25,
             child: Image.asset('assets/images/Efforts.jpg', fit: BoxFit.fill),
           ),
+          SizedBox(height: 1),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10.0),
+            child: Row(
+              mainAxisSize: MainAxisSize.max,
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Container(
+                  height: 35,
+                  width: MediaQuery.of(context).size.width * 0.45,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    border: BoxBorder.all(color: Colors.black, width: 1),
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                  child: TextField(
+                    controller: trier,
+                    onChanged: filtrerList,
+                    showCursor: false,
+                    decoration: InputDecoration(
+                      hintText: "Search",
+                      suffixIcon: Icon(Icons.search),
+                    ),
+                    keyboardType: TextInputType.text,
+                  ),
+                ),
+
+                SizedBox(width: MediaQuery.of(context).size.width * 0.2),
+                Expanded(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.blue,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    height: 30,
+                    //width: MediaQuery.of(context).size.width*0.28,
+                    child: TextButton(
+                      onPressed: () {
+                        // Navigator.push(context,
+                        // MaterialPageRoute(
+                        //   builder: (context){
+                        //     return DetailsTask();
+                        //   }
+                        // ));
+                      },
+                      child: Text(
+                        "Ajouter une tache",
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
           Divider(height: 0.5, color: Colors.red),
-          // SizedBox(height:1),
+
           Expanded(
             child: Container(
               decoration: BoxDecoration(
                 color: const Color.fromARGB(255, 212, 211, 211),
-                borderRadius: BorderRadius.circular(5),
+                borderRadius: BorderRadius.circular(10),
               ),
 
               child: ListView.builder(
-                itemCount: taches.length,
+                itemCount: filtre.length,
                 itemBuilder: (context, index) {
+                  Map tache = filtre[index];
                   return Container(
                     margin: EdgeInsets.symmetric(horizontal: 6, vertical: 5),
                     padding: EdgeInsets.only(left: 3),
@@ -121,7 +181,7 @@ class Etatlister extends State<Lister> {
 
                           children: [
                             Text(
-                              taches[index]["Titre"],
+                              tache["Titre"],
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
@@ -135,9 +195,18 @@ class Etatlister extends State<Lister> {
                           children: [
                             TextButton(
                               child: Text(
-                                "${taches[index]["Description"]?.split("").take(20).join("")}....",
+                                "${tache["Description"]?.split("").take(20).join("")}....",
                               ),
-                              onPressed: () {},
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) {
+                                      return DetailsTask(index: index);
+                                    },
+                                  ),
+                                );
+                              },
                             ),
                             //  SizedBox(
                             //   width: 2,
@@ -181,7 +250,7 @@ class Etatlister extends State<Lister> {
 
                                   Container(
                                     decoration: BoxDecoration(
-                                      color: taches[index]["Couleur"],
+                                      color: tache["Couleur"],
                                       //const Color.fromARGB(
                                       //   255,
                                       //   135,
@@ -201,7 +270,7 @@ class Etatlister extends State<Lister> {
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
                             Text(
-                              taches[index]["Date_heure"],
+                              tache["Date_heure"],
                               style: TextStyle(fontSize: 10),
                             ),
                           ],
@@ -215,6 +284,19 @@ class Etatlister extends State<Lister> {
           ),
         ],
       ),
+
+      // bottomNavigationBar: Container(
+      //   height: MediaQuery.of(context).size.height*0.06,
+      //   child: NavigationBar(
+      //     backgroundColor: Colors.brown,
+      //     destinations:[
+      //       Icon(Icons.crop_square,color: Colors.white),
+      //       Icon(Icons.pause_circle_filled_outlined,color: Colors.white),
+      //       Icon(Icons.play_arrow,
+      //       textDirection: TextDirection.rtl,color: Colors.white)
+      //     ],
+      //   ),
+      // ),
     );
   }
 }
