@@ -1,6 +1,6 @@
 {
-    "name": "listes_taches",
-    "short_name": "listes_taches",
+    "name": "organiser",
+    "short_name": "organiser",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
